@@ -20,4 +20,6 @@ public interface TaskService {
     Task markCompleted(Long id);
 
     List<Priority> findAllPriorities();
+
+    String getDefaultPriorityCode();
 }

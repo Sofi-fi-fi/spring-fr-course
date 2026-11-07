@@ -59,7 +59,6 @@ public class TaskServiceImpl implements TaskService {
     public Task create(TaskCommand command) {
         Task task = new Task();
         applyCommand(task, command);
-        task.setStatus(TaskStatus.TODO);
         task.setCreatedAt(now());
         validator.validate(task);
         return taskRepository.save(task);
@@ -96,12 +95,27 @@ public class TaskServiceImpl implements TaskService {
         return priorityRepository.findAll();
     }
 
+    @Override
+    public String getDefaultPriorityCode() {
+        return defaultPriorityCode;
+    }
+
     private void applyCommand(Task task, TaskCommand command) {
         task.setTitle(command.title() == null ? null : command.title().strip());
         task.setDescription(command.description() == null || command.description().isBlank()
                 ? null : command.description().strip());
         task.setDueDate(command.dueDate());
         task.setPriority(resolvePriority(command.priorityCode()));
+        applyStatus(task, command.status() == null ? TaskStatus.TODO : command.status());
+    }
+
+    private void applyStatus(Task task, TaskStatus status) {
+        if (status == TaskStatus.DONE && !task.isCompleted()) {
+            task.setCompletedAt(now());
+        } else if (status != TaskStatus.DONE) {
+            task.setCompletedAt(null);
+        }
+        task.setStatus(status);
     }
 
     private Priority resolvePriority(String code) {

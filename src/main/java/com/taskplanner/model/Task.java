@@ -28,6 +28,10 @@ public class Task {
         return status == TaskStatus.DONE;
     }
 
+    public boolean isOverdue(LocalDateTime now) {
+        return !isCompleted() && dueDate != null && dueDate.isBefore(now);
+    }
+
     public Task copy() {
         Task copy = new Task(title, description, dueDate, priority);
         copy.id = id;
