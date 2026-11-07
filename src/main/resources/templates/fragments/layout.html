@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' — Планувальник задач'">Планувальник задач</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:fragment="header">
+    <a class="brand" th:href="@{/}">Планувальник задач</a>
+    <nav>
+        <a th:href="@{/}">Задачі</a>
+    </nav>
+</header>
+
+<div th:fragment="flash" class="alert alert-ok" th:if="${message}" th:text="${message}">Повідомлення</div>
+</body>
+</html>

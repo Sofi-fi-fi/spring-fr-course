@@ -1,74 +1,75 @@
 <!DOCTYPE html>
 <html lang="uk" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Планувальник задач</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
-</head>
+<head th:replace="~{fragments/layout :: head('Задачі')}"></head>
 <body>
-<header>
-    <span class="brand">Планувальник задач</span>
-    <a th:href="@{/}">Задачі</a>
-    <a th:href="@{/beans-demo}">Демонстрація бінів</a>
-</header>
+<header th:replace="~{fragments/layout :: header}"></header>
 <main>
-    <section class="card">
-        <h1>Задачі</h1>
-        <form th:action="@{/}" method="get" class="toolbar">
-            <div>
-                <label for="sort">Сортування</label>
-                <select id="sort" name="sort">
-                    <option th:each="s : ${sortOptions}" th:value="${s.key()}" th:text="${s.displayName()}"
-                            th:selected="${s.key() == sort}"></option>
-                </select>
-            </div>
-            <div>
-                <label for="dir">Напрям</label>
-                <select id="dir" name="dir">
-                    <option value="desc" th:selected="${dir == 'desc'}">спадання</option>
-                    <option value="asc" th:selected="${dir == 'asc'}">зростання</option>
-                </select>
-            </div>
-            <button type="submit">Застосувати</button>
-        </form>
+    <div th:replace="~{fragments/layout :: flash}"></div>
 
-        <table>
-            <tr><th>#</th><th>Назва</th><th>Опис</th><th>Пріоритет</th><th>Термін</th><th>Статус</th><th>Дії</th></tr>
-            <tr th:each="task : ${tasks}">
-                <td th:text="${task.id}"></td>
-                <td th:text="${task.title}"></td>
-                <td class="muted" th:text="${task.description}"></td>
-                <td th:text="${task.priority.name}"></td>
-                <td th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy HH:mm')}"></td>
-                <td th:text="${task.status.displayName}"></td>
+    <section class="card">
+        <div class="card-title">
+            <h1>Задачі</h1>
+            <a class="btn primary" th:href="@{/tasks/new}">+ Нова задача</a>
+        </div>
+
+        <p class="muted" th:if="${#lists.isEmpty(tasks)}">Задач поки немає. Створіть першу!</p>
+
+        <table th:unless="${#lists.isEmpty(tasks)}">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Задача</th>
+                <th>
+                    <a class="sort" title="Сортувати за пріоритетом"
+                       th:href="@{/(sort='priority', dir=${sort == 'priority' and dir == 'desc' ? 'asc' : 'desc'})}">
+                        Пріоритет
+                        <span class="sort-icon" th:classappend="${sort != 'priority'} ? 'inactive'"
+                              th:text="${sort == 'priority' ? (dir == 'desc' ? '↓' : '↑') : '↕'}">↕</span>
+                    </a>
+                </th>
+                <th>
+                    <a class="sort" title="Сортувати за терміном"
+                       th:href="@{/(sort='dueDate', dir=${sort == 'dueDate' and dir == 'asc' ? 'desc' : 'asc'})}">
+                        Термін
+                        <span class="sort-icon" th:classappend="${sort != 'dueDate'} ? 'inactive'"
+                              th:text="${sort == 'dueDate' ? (dir == 'desc' ? '↓' : '↑') : '↕'}">↕</span>
+                    </a>
+                </th>
+                <th>Статус</th>
+                <th>Дії</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="task : ${tasks}" th:classappend="${task.completed} ? 'done'">
+                <td th:text="${task.id}">1</td>
                 <td>
-                    <form class="inline" th:action="@{/tasks/{id}/complete(id=${task.id})}" method="post">
+                    <div class="title" th:text="${task.title}">Назва задачі</div>
+                    <div class="muted" th:text="${task.description} ?: 'Без опису'">Опис</div>
+                </td>
+                <td th:switch="${task.priority.code}">
+                    <span th:case="'CRITICAL'" class="badge badge-critical" th:text="${task.priority.name}">Критичний</span>
+                    <span th:case="'HIGH'" class="badge badge-high" th:text="${task.priority.name}">Високий</span>
+                    <span th:case="'MEDIUM'" class="badge badge-medium" th:text="${task.priority.name}">Середній</span>
+                    <span th:case="*" class="badge badge-low" th:text="${task.priority.name}">Низький</span>
+                </td>
+                <td>
+                    <span th:text="${task.dueDate != null} ? ${#temporals.format(task.dueDate, 'dd.MM.yyyy HH:mm')} : 'Без терміну'">01.01.2026 18:00</span>
+                    <span class="badge badge-overdue" th:if="${task.isOverdue(now)}">Прострочено</span>
+                </td>
+                <td th:text="${task.status.displayName}">До виконання</td>
+                <td class="actions">
+                    <form class="inline" th:unless="${task.completed}"
+                          th:action="@{/tasks/{id}/complete(id=${task.id})}" method="post">
                         <button type="submit">Виконано</button>
                     </form>
+                    <a class="btn" th:href="@{/tasks/{id}/edit(id=${task.id})}">Редагувати</a>
                     <form class="inline" th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post">
                         <button type="submit" class="danger">Видалити</button>
                     </form>
                 </td>
             </tr>
+            </tbody>
         </table>
-    </section>
-
-    <section class="card">
-        <h2>Нова задача</h2>
-        <form th:action="@{/tasks}" method="post" class="grid">
-            <div><label for="title">Назва</label><input id="title" name="title" required></div>
-            <div><label for="description">Опис</label><input id="description" name="description"></div>
-            <div><label for="dueDate">Термін</label><input id="dueDate" name="dueDate" type="datetime-local"></div>
-            <div>
-                <label for="priorityCode">Пріоритет</label>
-                <select id="priorityCode" name="priorityCode">
-                    <option th:each="p : ${priorities}" th:value="${p.code}" th:text="${p.name}"
-                            th:selected="${p.code == 'MEDIUM'}"></option>
-                </select>
-            </div>
-            <div><button type="submit" class="primary">Додати</button></div>
-        </form>
     </section>
 </main>
 </body>
