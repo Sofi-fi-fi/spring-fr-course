@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Демонстрація бінів</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header>
+    <span class="brand">Планувальник задач</span>
+    <a th:href="@{/}">Задачі</a>
+    <a th:href="@{/beans-demo}">Демонстрація бінів</a>
+</header>
+<main>
+    <section class="card">
+        <h1>Області видимості бінів: singleton та prototype</h1>
+        <p class="muted">Кожен бін отримано з контейнера двічі; значення — System.identityHashCode об'єкта.</p>
+        <table>
+            <tr><th>Що отримуємо</th><th>Scope</th><th>1-й об'єкт</th><th>2-й об'єкт</th><th>Той самий екземпляр?</th></tr>
+            <tr th:each="row : ${rows}">
+                <td th:text="${row.description()}"></td>
+                <td th:text="${row.scope()}"></td>
+                <td><code th:text="${row.first()}"></code></td>
+                <td><code th:text="${row.second()}"></code></td>
+                <td th:class="${row.sameInstance()} ? 'yes' : 'no'" th:text="${row.sameInstance()} ? 'так' : 'ні'"></td>
+            </tr>
+        </table>
+    </section>
+    <section class="card">
+        <h2>@Primary</h2>
+        <p>Бінів типу <code>TaskSortStrategy</code> два. Без уточнення впроваджується
+            <b th:text="${primaryStrategy}"></b> (позначений <code>@Primary</code>).</p>
+    </section>
+</main>
+</body>
+</html>

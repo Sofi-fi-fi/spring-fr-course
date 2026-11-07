@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Планувальник задач</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header>
+    <span class="brand">Планувальник задач</span>
+    <a th:href="@{/}">Задачі</a>
+    <a th:href="@{/beans-demo}">Демонстрація бінів</a>
+</header>
+<main>
+    <section class="card">
+        <h1>Задачі</h1>
+        <form th:action="@{/}" method="get" class="toolbar">
+            <div>
+                <label for="sort">Сортування</label>
+                <select id="sort" name="sort">
+                    <option th:each="s : ${sortOptions}" th:value="${s.key()}" th:text="${s.displayName()}"
+                            th:selected="${s.key() == sort}"></option>
+                </select>
+            </div>
+            <div>
+                <label for="dir">Напрям</label>
+                <select id="dir" name="dir">
+                    <option value="desc" th:selected="${dir == 'desc'}">спадання</option>
+                    <option value="asc" th:selected="${dir == 'asc'}">зростання</option>
+                </select>
+            </div>
+            <button type="submit">Застосувати</button>
+        </form>
+
+        <table>
+            <tr><th>#</th><th>Назва</th><th>Опис</th><th>Пріоритет</th><th>Термін</th><th>Статус</th><th>Дії</th></tr>
+            <tr th:each="task : ${tasks}">
+                <td th:text="${task.id}"></td>
+                <td th:text="${task.title}"></td>
+                <td class="muted" th:text="${task.description}"></td>
+                <td th:text="${task.priority.name}"></td>
+                <td th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy HH:mm')}"></td>
+                <td th:text="${task.status.displayName}"></td>
+                <td>
+                    <form class="inline" th:action="@{/tasks/{id}/complete(id=${task.id})}" method="post">
+                        <button type="submit">Виконано</button>
+                    </form>
+                    <form class="inline" th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post">
+                        <button type="submit" class="danger">Видалити</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section class="card">
+        <h2>Нова задача</h2>
+        <form th:action="@{/tasks}" method="post" class="grid">
+            <div><label for="title">Назва</label><input id="title" name="title" required></div>
+            <div><label for="description">Опис</label><input id="description" name="description"></div>
+            <div><label for="dueDate">Термін</label><input id="dueDate" name="dueDate" type="datetime-local"></div>
+            <div>
+                <label for="priorityCode">Пріоритет</label>
+                <select id="priorityCode" name="priorityCode">
+                    <option th:each="p : ${priorities}" th:value="${p.code}" th:text="${p.name}"
+                            th:selected="${p.code == 'MEDIUM'}"></option>
+                </select>
+            </div>
+            <div><button type="submit" class="primary">Додати</button></div>
+        </form>
+    </section>
+</main>
+</body>
+</html>
