@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${taskId == null} ? 'Нова задача' : 'Редагування задачі')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <section class="card narrow">
+        <h1 th:text="${taskId == null} ? 'Нова задача' : 'Редагування задачі'">Нова задача</h1>
+
+        <form th:action="${taskId == null} ? @{/tasks} : @{/tasks/{id}(id=${taskId})}"
+              th:object="${taskForm}" method="post" class="form">
+
+            <div class="alert alert-err" th:if="${#fields.hasGlobalErrors()}">
+                <p th:each="error : ${#fields.globalErrors()}" th:text="${error}">Помилка</p>
+            </div>
+
+            <div class="field">
+                <label for="title">Назва *</label>
+                <input type="text" id="title" th:field="*{title}" th:errorclass="invalid">
+                <p class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Помилка</p>
+            </div>
+
+            <div class="field">
+                <label for="description">Опис</label>
+                <textarea id="description" rows="4" th:field="*{description}" th:errorclass="invalid"></textarea>
+                <p class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Помилка</p>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="dueDate">Термін виконання</label>
+                    <input type="datetime-local" id="dueDate" th:field="*{dueDate}" th:errorclass="invalid">
+                    <p class="field-error" th:if="${#fields.hasErrors('dueDate')}">Invalid date format</p>
+                </div>
+
+                <div class="field">
+                    <label for="priorityCode">Пріоритет</label>
+                    <select id="priorityCode" th:field="*{priorityCode}" th:errorclass="invalid">
+                        <option th:each="priority : ${priorities}" th:value="${priority.code}"
+                                th:text="${priority.name}">Середній</option>
+                    </select>
+                    <p class="field-error" th:if="${#fields.hasErrors('priorityCode')}" th:errors="*{priorityCode}">Помилка</p>
+                </div>
+
+                <div class="field" th:if="${taskId != null}">
+                    <label for="status">Статус</label>
+                    <select id="status" th:field="*{status}">
+                        <option th:each="status : ${statuses}" th:value="${status}"
+                                th:text="${status.displayName}">До виконання</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="primary">Зберегти</button>
+                <a class="btn" th:href="@{/}">Скасувати</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>
